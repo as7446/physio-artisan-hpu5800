@@ -1,10 +1,6 @@
 kind: pipeline
 type: docker
 name: build-and-deploy
-
-clone:
-  git:
-    image: drone/git:1
     
 trigger:
   branch:
