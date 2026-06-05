@@ -9,56 +9,31 @@ trigger:
     - push
 
 steps:
-  # 1️⃣ 登录阿里云 Docker Registry
-  - name: docker-login
-    image: docker:24.0.5
-    environment:
-      ALIYUN_REGISTRY_USERNAME:
-        from_secret: aliyun_registry_username
-      ALIYUN_REGISTRY_PASSWORD:
-        from_secret: aliyun_registry_password
-    commands:
-      - echo "$ALIYUN_REGISTRY_PASSWORD" | docker login --username "$ALIYUN_REGISTRY_USERNAME" --password-stdin registry.cn-hangzhou.aliyuncs.com
-    volumes:
-      - name: docker_sock
-        path: /var/run/docker.sock
-
-  # 2️⃣ 构建并推送镜像
   - name: build-and-push
     image: plugins/docker
     settings:
       repo: registry.cn-hangzhou.aliyuncs.com/sh-cloud/hpu
+      registry: registry.cn-hangzhou.aliyuncs.com
       tags:
         - latest
-        - ${DRONE_COMMIT_SHA}
+        - ${DRONE_COMMIT_SHA:0:8}
       dockerfile: Dockerfile
       context: ./
-      registry: registry.cn-hangzhou.aliyuncs.com
       username:
         from_secret: aliyun_registry_username
       password:
         from_secret: aliyun_registry_password
-    depends_on:
-      - docker-login
 
-  # 3️⃣ 调用 Jenkins webhook 更新 tag
-  - name: notify-webhook
+  - name: notify-jenkins
     image: curlimages/curl:latest
     environment:
       JENKINS_TOKEN:
         from_secret: jenkins_token
+      IMAGE_REPO: registry.cn-hangzhou.aliyuncs.com/sh-cloud/hpu
     commands:
       - >
         SHORT_SHA=${DRONE_COMMIT_SHA:0:8} &&
         curl -X POST https://gateway-api.shangyuanlabs.com/api/v1/jenkins/update-tag \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $JENKINS_TOKEN" \
-        -d "{\"service\":\"hpu\",\"image\":\"registry.cn-hangzhou.aliyuncs.com/sh-cloud/hpu:${SHORT_SHA}\"}"
-    depends_on:
-      - build-and-push
-
-# 使用宿主机 Docker socket
-volumes:
-  - name: docker_sock
-    host:
-      path: /var/run/docker.sock
+        -d "{\"service\":\"hpu\",\"image\":\"${IMAGE_REPO}:${SHORT_SHA}\"}"
