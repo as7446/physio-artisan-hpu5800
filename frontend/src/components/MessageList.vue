@@ -21,7 +21,8 @@ const roles = {
     placement: 'start' as const,
     // TODO[icon]: 助手头像占位
     avatar: { style: { background: 'var(--c-primary-soft)', color: 'var(--c-primary)' }, icon: h('span', 'AI') },
-    typing: { step: 2, interval: 20 },
+    // 打字机效果由 store 缓冲循环统一控制（见 stores/chat.ts），
+    // 这里不再开 Bubble 自带 typing，避免双重动画。
     styles: {
       content: { background: '#fff', color: 'var(--c-text)' },
     },

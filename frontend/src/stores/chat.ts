@@ -31,6 +31,12 @@ function genId(): string {
   return `m_${Date.now()}_${_uid}`
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+// 打字机渲染节奏
+const TYPE_INTERVAL = 16 // 每帧间隔（ms），约 60fps
+const CATCHUP_DIVISOR = 8 // 缓冲越多揭示越快：每帧揭示 ceil(剩余/该值) 个字符
+
 export const useChatStore = defineStore('chat', {
   state: () => ({
     conversations: [] as ConversationMeta[],
@@ -40,6 +46,8 @@ export const useChatStore = defineStore('chat', {
     sending: false,
     listLoading: false,
     abortController: null as AbortController | null,
+    // 用户中止流式输出时置 true，打字机循环据此提前结束
+    streamAborted: false,
   }),
 
   getters: {
@@ -109,6 +117,7 @@ export const useChatStore = defineStore('chat', {
       if (!content || this.sending) return
 
       this.sending = true
+      this.streamAborted = false
       this.abortController = new AbortController()
 
       this.messages.push({ id: genId(), role: 'user', content })
@@ -122,6 +131,26 @@ export const useChatStore = defineStore('chat', {
       const assistant = this.messages[this.messages.length - 1]
 
       const isNew = !this.activeId
+
+      // 网络接收与显示解耦：token 先进 buffer，打字机循环按稳定节奏吐字
+      let buffer = '' // 已收到的完整文本（目标）
+      let networkDone = false
+
+      const typewriter = (async () => {
+        while (true) {
+          if (this.streamAborted) break
+          const shown = assistant.content.length
+          if (shown < buffer.length) {
+            // 缓冲越多揭示越快，接近追平时逐字吐，避免落后太多又保持顺滑
+            const remain = buffer.length - shown
+            const step = Math.max(1, Math.ceil(remain / CATCHUP_DIVISOR))
+            assistant.content = buffer.slice(0, shown + step)
+          } else if (networkDone) {
+            break // 已吐完且网络结束
+          }
+          await sleep(TYPE_INTERVAL)
+        }
+      })()
 
       await sendChat(
         {
@@ -142,15 +171,16 @@ export const useChatStore = defineStore('chat', {
             }
           },
           onToken: (token) => {
-            assistant.content += token
+            buffer += token
           },
           onError: (msg) => {
-            assistant.content += assistant.content
-              ? `\n\n[出错：${msg}]`
-              : `[出错：${msg}]`
+            buffer += buffer ? `\n\n[出错：${msg}]` : `[出错：${msg}]`
           },
         },
       )
+
+      networkDone = true
+      await typewriter // 等剩余 buffer 吐完（或被中止）
 
       assistant.streaming = false
       this.sending = false
@@ -162,6 +192,8 @@ export const useChatStore = defineStore('chat', {
 
     // 中止当前流式请求
     stop() {
+      // 通知打字机循环立即结束（不再继续吐剩余 buffer）
+      this.streamAborted = true
       this.abortController?.abort()
       this.abortController = null
       this.sending = false
