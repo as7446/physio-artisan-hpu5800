@@ -12,6 +12,7 @@
 import type {
   ChatStreamHandlers,
   ConversationResponse,
+  ConversationSummary,
 } from './types'
 
 // 统一前缀，开发期由 Vite 代理到 FastAPI(8000)
@@ -101,6 +102,13 @@ export async function sendChat(
 export async function getConversation(id: string): Promise<ConversationResponse> {
   const resp = await fetch(`${BASE}/conversations/${encodeURIComponent(id)}`)
   if (!resp.ok) throw new Error(`查询会话失败：HTTP ${resp.status}`)
+  return resp.json()
+}
+
+/** 列出所有会话（按最近更新倒序） */
+export async function listConversations(): Promise<ConversationSummary[]> {
+  const resp = await fetch(`${BASE}/conversations`)
+  if (!resp.ok) throw new Error(`查询会话列表失败：HTTP ${resp.status}`)
   return resp.json()
 }
 

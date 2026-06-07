@@ -7,3 +7,13 @@
 2026-06-07 21:56:34 - api_server - INFO - 已清空会话历史: 398ad99ed7bb439c95b083f77a61c842
 2026-06-07 22:51:12 - api_server - INFO - 收到聊天请求[会话 3e4713805c61454fbee867598dc27136]: 用一句话说个减脂建议
 2026-06-07 22:51:33 - api_server - INFO - 已清空会话历史: 3e4713805c61454fbee867598dc27136
+2026-06-07 23:00:34 - api_server - INFO - 收到聊天请求[会话 0c18ec3c5de44ad0bdbcf434e4455b46]: 我想减脂，给个建议
+2026-06-07 23:00:43 - api_server - INFO - 收到聊天请求[会话 d809d1b737e94242a716f2b49503f4a2]: 帮我看看睡眠
+2026-06-07 23:01:06 - api_server - INFO - 已清空会话历史: 0c18ec3c5de44ad0bdbcf434e4455b46
+2026-06-07 23:01:06 - api_server - INFO - 已清空会话历史: d809d1b737e94242a716f2b49503f4a2
+2026-06-07 23:04:15 - api_server - INFO - 收到聊天请求[会话 5c3a60d28a824a7db8a0ea22d59e1a26]: 给我一个增肌饮食建议
+2026-06-07 23:04:26 - api_server - INFO - 收到聊天请求[会话 eb3cd78e2a3b49fd9c47871db3a79fb5]: 如何改善睡眠质量
+2026-06-07 23:04:46 - api_server - INFO - 已清空会话历史: eb3cd78e2a3b49fd9c47871db3a79fb5
+2026-06-07 23:04:46 - api_server - INFO - 已清空会话历史: 5c3a60d28a824a7db8a0ea22d59e1a26
+2026-06-07 23:08:25 - api_server - INFO - 收到聊天请求[会话 2795f7a37cfb45eca482d2ba8c10aaa1]: 你好
+2026-06-07 23:10:39 - api_server - INFO - 收到聊天请求[会话 2795f7a37cfb45eca482d2ba8c10aaa1]: 什么有些发烧该怎么办

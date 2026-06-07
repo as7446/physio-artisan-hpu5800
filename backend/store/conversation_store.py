@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import asyncio
 import os
+import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypedDict
 
 
 # 每个会话默认保留的「轮」数（1 轮 = 1 条 user + 1 条 assistant）。
@@ -26,10 +27,26 @@ from typing import Dict, List, Optional
 DEFAULT_MAX_TURNS = 20
 
 
+class ConversationSummary(TypedDict):
+    """会话列表项：用于左侧历史栏展示。"""
+    conversation_id: str
+    title: str           # 取首条 user 消息的前若干字符
+    updated_at: float    # Unix 时间戳（秒），便于前端排序/格式化
+
+
+def _make_title(messages: List[Dict[str, str]]) -> str:
+    """从消息列表生成标题：取首条 user 消息，截断到 30 字。"""
+    for m in messages:
+        if m.get("role") == "user":
+            text = (m.get("content") or "").strip().replace("\n", " ")
+            return text[:30] or "新对话"
+    return "新对话"
+
+
 class ConversationStore(ABC):
     """会话历史存储接口。
 
-    实现类需保证 get_history / append / clear 在并发协程下的安全性。
+    实现类需保证 get_history / append / clear / list_conversations 在并发协程下的安全性。
     """
 
     @abstractmethod
@@ -47,6 +64,11 @@ class ConversationStore(ABC):
         """清空（删除）指定会话的历史。会话不存在时应静默成功。"""
         raise NotImplementedError
 
+    @abstractmethod
+    async def list_conversations(self) -> List[ConversationSummary]:
+        """列出所有会话摘要，按最近更新时间倒序。"""
+        raise NotImplementedError
+
 
 class InMemoryConversationStore(ConversationStore):
     """基于进程内字典的会话历史存储（默认实现）。
@@ -61,6 +83,7 @@ class InMemoryConversationStore(ConversationStore):
 
     def __init__(self, max_turns: int = DEFAULT_MAX_TURNS) -> None:
         self._data: Dict[str, List[Dict[str, str]]] = defaultdict(list)
+        self._updated_at: Dict[str, float] = {}
         self._locks: Dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
         self._max_messages = max(1, max_turns) * 2
 
@@ -79,10 +102,25 @@ class InMemoryConversationStore(ConversationStore):
             overflow = len(history) - self._max_messages
             if overflow > 0:
                 del history[:overflow]
+            self._updated_at[conversation_id] = time.time()
 
     async def clear(self, conversation_id: str) -> None:
         async with self._locks[conversation_id]:
             self._data.pop(conversation_id, None)
+            self._updated_at.pop(conversation_id, None)
+
+    async def list_conversations(self) -> List[ConversationSummary]:
+        items: List[ConversationSummary] = [
+            {
+                "conversation_id": cid,
+                "title": _make_title(msgs),
+                "updated_at": self._updated_at.get(cid, 0.0),
+            }
+            for cid, msgs in self._data.items()
+            if msgs
+        ]
+        items.sort(key=lambda x: x["updated_at"], reverse=True)
+        return items
 
 
 # --------------------------- 全局单例 ---------------------------

@@ -16,7 +16,11 @@ from typing import Dict, List
 
 from psycopg2.extras import Json
 
-from .conversation_store import ConversationStore, DEFAULT_MAX_TURNS
+from .conversation_store import (
+    ConversationStore,
+    ConversationSummary,
+    DEFAULT_MAX_TURNS,
+)
 from .db import get_pool
 
 
@@ -137,3 +141,38 @@ class PostgresConversationStore(ConversationStore):
                 )
 
         await asyncio.to_thread(self._run, delete)
+
+    async def list_conversations(self) -> List[ConversationSummary]:
+        await self._ensure_table()
+
+        def query(conn):
+            with conn.cursor() as cur:
+                # 直接在 SQL 里取首条 user 消息作标题，避免回传全部 messages
+                cur.execute(
+                    """
+                    SELECT
+                        conversation_id,
+                        COALESCE((
+                            SELECT m ->> 'content'
+                            FROM jsonb_array_elements(messages) AS m
+                            WHERE m ->> 'role' = 'user'
+                            LIMIT 1
+                        ), '') AS title,
+                        EXTRACT(EPOCH FROM updated_at) AS updated_at
+                    FROM chat_conversations
+                    WHERE jsonb_array_length(messages) > 0
+                    ORDER BY updated_at DESC
+                    """
+                )
+                return cur.fetchall()
+
+        rows = await asyncio.to_thread(self._run, query)
+        result: List[ConversationSummary] = []
+        for cid, title, updated_at in rows:
+            clean = (title or "").strip().replace("\n", " ")[:30] or "新对话"
+            result.append({
+                "conversation_id": cid,
+                "title": clean,
+                "updated_at": float(updated_at or 0.0),
+            })
+        return result

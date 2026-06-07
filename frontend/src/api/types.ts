@@ -12,6 +12,13 @@ export interface ConversationResponse {
   messages: ChatMessageDTO[]
 }
 
+// 会话列表项（GET /conversations）
+export interface ConversationSummary {
+  conversation_id: string
+  title: string
+  updated_at: number // Unix 时间戳（秒）
+}
+
 // SSE 流式回调
 export interface ChatStreamHandlers {
   // 首个事件：服务端返回本轮会话 ID（新建会话时尤其重要）

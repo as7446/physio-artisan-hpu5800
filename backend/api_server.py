@@ -82,6 +82,12 @@ class ConversationResponse(BaseModel):
     messages: List[ChatMessage] = Field(..., description="该会话的历史消息列表")
 
 
+class ConversationSummaryItem(BaseModel):
+    conversation_id: str = Field(..., description="会话ID")
+    title: str = Field(..., description="会话标题（取首条用户消息）")
+    updated_at: float = Field(..., description="最近更新时间（Unix 时间戳，秒）")
+
+
 # --------------------------- 聊天接口（SSE 流式） ---------------------------
 @app.post("/chat")
 async def chat_with_ai(request: ChatRequest):
@@ -143,6 +149,12 @@ async def chat_with_ai(request: ChatRequest):
 
 
 # --------------------------- 会话历史管理接口 ---------------------------
+@app.get("/conversations", response_model=List[ConversationSummaryItem])
+async def list_conversations():
+    """列出所有会话摘要，按最近更新时间倒序（供前端历史栏拉取）。"""
+    return await get_store().list_conversations()
+
+
 @app.get("/conversations/{conversation_id}", response_model=ConversationResponse)
 async def get_conversation(conversation_id: str):
     """查询指定会话的历史消息。"""

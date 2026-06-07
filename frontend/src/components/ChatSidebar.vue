@@ -1,10 +1,15 @@
 <script setup lang="ts">
-// 左侧历史会话栏：新建按钮 + 会话列表（本地维护）
-import { computed } from 'vue'
+// 左侧历史会话栏：新建按钮 + 会话列表（从服务端拉取）
+import { computed, onMounted } from 'vue'
 import { Conversations } from 'ant-design-x-vue'
 import { useChatStore } from '@/stores/chat'
 
 const store = useChatStore()
+
+// 进入页面即从服务端拉取会话列表
+onMounted(() => {
+  store.fetchConversations()
+})
 
 const items = computed(() =>
   store.conversations.map((c) => ({ key: c.id, label: c.title })),

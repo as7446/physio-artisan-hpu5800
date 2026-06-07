@@ -24,17 +24,18 @@ npm run dev      # 默认 http://localhost:8080
 | 前端调用 | 代理到 backend | 用途 |
 |----------|---------------|------|
 | `POST /api/chat` | `POST /chat` | 发送消息，SSE 流式接收 |
+| `GET /api/conversations` | `GET /conversations` | 拉取会话列表（左侧历史栏，按更新倒序） |
 | `GET /api/conversations/{id}` | `GET /conversations/{id}` | 拉取某会话历史 |
 | `DELETE /api/conversations/{id}` | `DELETE /conversations/{id}` | 清空某会话 |
 
-**会话列表说明**：backend 没有「列出全部会话」的接口，因此左侧历史列表由前端用 `localStorage` 维护（保存 `conversation_id` + 标题 + 时间），切换会话时再用 `GET /conversations/{id}` 拉取消息。
+**会话列表说明**：左侧历史列表从服务端 `GET /conversations` 拉取（标题取首条用户消息，按最近更新倒序），支持跨设备/跨浏览器。新会话发首条消息时前端先乐观插入到列表顶部，流式结束后重新拉取列表与服务端对齐。
 
 ## 目录结构
 
 ```
 src/
 ├── api/
-│   ├── chat.ts        # 接口封装：sendChat(SSE) / getConversation / deleteConversation
+│   ├── chat.ts        # 接口封装：sendChat(SSE) / listConversations / getConversation / deleteConversation
 │   └── types.ts       # 接口类型
 ├── components/
 │   ├── ChatSidebar.vue   # 左侧历史会话栏
