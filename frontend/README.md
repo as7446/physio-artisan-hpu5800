@@ -1,4 +1,4 @@
-# 健康助手 · 前端
+# 健身训练助手 · 前端
 
 Vue3 + TypeScript + Vite 的机器人聊天前端，对接 backend FastAPI 的 `/chat`、`/conversations` 接口。
 UI 基于 ant-design-x-vue（Ant Design X 的 Vue 版，专为 AI 聊天设计）。

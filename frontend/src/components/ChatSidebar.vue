@@ -42,7 +42,7 @@ const menuConfig = (conversation: { key: string }) => ({
     <div class="sidebar__brand">
       <!-- TODO[icon]: 品牌 Logo 占位 -->
       <span class="sidebar__logo">◎</span>
-      <span class="sidebar__title">健康助手</span>
+      <span class="sidebar__title">健身训练助手</span>
     </div>
 
     <a-button class="sidebar__new" type="primary" block @click="store.newConversation">

@@ -37,8 +37,8 @@ function handleSuggestion(info: { data: { description?: unknown } }) {
         <!-- TODO[icon]: 助手图标占位 -->
         <span class="panel__bot">🤖</span>
         <div>
-          <div class="panel__name">能康助手</div>
-          <div class="panel__desc">您的智能健康助手</div>
+          <div class="panel__name">健身训练助手</div>
+          <div class="panel__desc">您的智能健身训练助手</div>
         </div>
       </div>
     </header>
@@ -46,7 +46,7 @@ function handleSuggestion(info: { data: { description?: unknown } }) {
     <!-- 空会话：欢迎区；有消息：消息列表 -->
     <div v-if="!store.messages.length" class="panel__welcome">
       <div class="welcome__icon">🤖</div>
-      <div class="welcome__greet">Hi！我是你的能康助手，有什么可以帮你的吗？</div>
+      <div class="welcome__greet">Hi！我是你的健身训练助手，有什么可以帮你的吗？</div>
       <Prompts
         class="welcome__prompts"
         :items="suggestions"
