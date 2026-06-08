@@ -17,7 +17,7 @@ steps:
       tags:
         - latest
         - ${DRONE_COMMIT_SHA:0:8}
-      dockerfile: Dockerfile
+      dockerfile: backend/Dockerfile
       context: ./
       username:
         from_secret: aliyun_registry_username
