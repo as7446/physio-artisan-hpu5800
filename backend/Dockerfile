@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM registry.cn-shanghai.aliyuncs.com/sh-cloud/python:3.12-slim
 
 # 设置工作目录
 WORKDIR /app
