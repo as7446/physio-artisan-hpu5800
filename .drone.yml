@@ -12,13 +12,12 @@ steps:
   - name: debug
     image: alpine
     environment:
-      USERNAME:
+      TEST_USER:
         from_secret: aliyun_registry_username
-      PASSWORD:
-        from_secret: aliyun_registry_password
+
     commands:
-      - echo "username length=${#USERNAME}"
-      - echo "password length=${#PASSWORD}"
+      - echo "$TEST_USER"
+      - test -n "$TEST_USER"
   - name: build-and-push
     image: plugins/docker
     settings:
