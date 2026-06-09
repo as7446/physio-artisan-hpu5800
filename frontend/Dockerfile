@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM registry.cn-shanghai.aliyuncs.com/sh-cloud/node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN npm run build
 
 
 # ============ Runtime Stage ============
-FROM nginx:1.27-alpine
+FROM registry.cn-shanghai.aliyuncs.com/sh-cloud/nginx:1.27-alpine
 
 RUN rm -rf /usr/share/nginx/html/*
 
