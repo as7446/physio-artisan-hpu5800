@@ -9,6 +9,9 @@ trigger:
   event:
     - custom
 
+clone:
+  retries: 3
+  
 steps:
   - name: build-backend
     image: plugins/docker
