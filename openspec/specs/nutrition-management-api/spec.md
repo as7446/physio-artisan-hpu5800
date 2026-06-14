@@ -40,7 +40,7 @@ TBD - created by archiving change add-three-page-read-apis. Update Purpose after
 - **WHEN** 当日仅有旧 `nutrition_result` 汇总、无结构化单品
 - **THEN** `meals[]` 回退 mock 结构并标 `mock`，页面可渲染
 
-### Requirement: 饮食页运动建议（mock 兜底）
+### Requirement: 饮食页运动建议
 系统 SHALL 返回运动建议：运动类型、运动时长、消耗目标，及推荐动作清单（动作名 + 组数×次数 / 时长）。第三层换源后：优先取 `user_plans.training_plan`（`training_type`/`target_duration_min`/`target_total_kcal`/`exercises[].sets,reps`），`sources` 标 `db`；无计划时规则兜底标 `derived`。动作名对齐前端图标集。
 
 #### Scenario: 运动建议来自计划表
