@@ -208,7 +208,8 @@ async def run_assessment_task(task_id: str, user_id: int, mode: str, session_id:
         assessment_tasks[task_id].update(status="processing", progress=20,
                                           message="多智能体会诊中：生理评估 → 教练 → 膳食 → 报告...")
         result = await asyncio.to_thread(
-            lambda: get_agents().run_health_assessment({"user_id": user_id, "mode": mode})
+            lambda: get_agents().run_health_assessment(
+                {"user_id": user_id, "mode": mode, "session_id": session_id})
         )
         if result.get("success"):
             assessment_tasks[task_id].update(status="completed", progress=100,
