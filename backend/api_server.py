@@ -37,7 +37,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from config.langgraph_config import langgraph_config as config
 from store import get_store
-from store.postgres_store import save_assessment_artifacts
+from store.postgres_store import save_assessment_artifacts, save_user_plan
 from agents.langgraph_agents import LangGraphHealthAgents
 from agents import intake
 from agents import health_data as hdata
@@ -251,6 +251,12 @@ async def run_assessment_task(task_id: str, user_id: int, mode: str, session_id:
                 await save_assessment_artifacts(session_id, user_id, result)
             except Exception as e:  # noqa: BLE001
                 api_logger.error(f"任务 {task_id} 产出回写失败: {e}")
+            # 训练/睡眠/饮食计划回写到 user_plans（三页建议/方案源）
+            try:
+                from datetime import date as _date
+                await save_user_plan(user_id, _date.today().isoformat(), result)
+            except Exception as e:  # noqa: BLE001
+                api_logger.error(f"任务 {task_id} user_plans 回写失败: {e}")
         else:
             assessment_tasks[task_id].update(status="failed", progress=100,
                                              message=result.get("error", "未知错误"), result=result)
